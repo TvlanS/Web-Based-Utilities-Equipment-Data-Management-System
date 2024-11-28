@@ -1,0 +1,67 @@
+{% extends "PM_system/base.html" %}
+{% load crispy_forms_tags %}
+
+
+{% block content %}
+
+<nav class="navbar navbar-expand-lg navbar-light" style="background-color: #ffffff;">
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="nav nav-pills" >
+        <li class="nav-item">
+          <a class="nav-link active" href="{% url 'compressor_insert' %}">Chiller</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'PM_filter' %}">Boiler</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'PM_plot' %}">Compressor</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'PM_plot' %}">Water Meter</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'PM_plot' %}">Gas Meter</a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+<div class="container">
+    <div class="p-4 mb-0 bg-light rounded-3">
+        <div class="container-fluid py-0">
+
+          <div class = "container pb-5">
+               <form action="{% url 'PM_plot' %}" method="GET" autocomplete="off">
+                {%crispy form2%}
+               </form> 
+          </div>
+            
+
+            <div class = "border border-dark rounded p-3">
+                <div class = "row ">
+                    <p class = "col-md-3"> Mean : {{avg}}</p>
+                    <p class = "col-md-3"> Maximum : {{max}}</p> 
+                    <p class = "col-md-3"> Minimum : {{min}}</p>
+                    <p class = "col-md-3"> Deviation : {{std1}}</p>
+                </div>
+                <div class = "row">
+                    <p class = "col-md-3"> Anomaly count : {{count}}</p> 
+                    <p class = "col-md-3"> Percentage : {{percentage}}</p> 
+                    <div class="form-check form-switch col-md-3">
+                      <label class="form-check-label" for="flexSwitchCheckDefault">Treadline</label>
+                      <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault" checked>
+                  </div>
+
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+    <div class="p-2 mb-4 bg-light rounded-3">
+        <div class="container-fluid py-2">
+        {{chart|safe}}
+        </div>    
+    </div>
+</div>
+
+{% endblock %}

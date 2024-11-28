@@ -1,0 +1,49 @@
+{% extends "PM_system/base.html"%}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class = "container">
+    <div class="p-5 mb-5 bg-light round-3">
+        <div class="container-fluid py-5">
+            <h1 class="display-6 text-center fw-bold">Filter List</h1>
+        </div>
+        
+       
+    </div>
+    <div class="p-5 mb-4 bg-light round-3">
+        <div class="container-fluid py-5">
+            <h1 class="display-6 text-center fw-bold">Compressor List</h1>
+            <div class="table-responsive" style="height: 300px" overflow-y:auto;>
+                <table class="table table-borderless text-center">
+                    <thead class="border-bottom font-weight-bold"  style="position: sticky; top: 0; background-color: white; z-index: 1;"> 
+                        <tr>
+                            <td> Compressor Unit </td>
+                            <td> Date </td>
+                            <td> Evap Water Entering Temp (°C) </td>
+                           
+                        </tr>
+                    </thead>
+                    <tbody> 
+                        {% for compressor in compressor_list %} 
+                            <tr>
+                                <td> {{compressor.unit}}</td> 
+                                <td> {{compressor.date}}</td>
+                                <td> {{compressor.Evap_Entering_Water_Temp}}</td>
+                            </tr>
+                        {% endfor%}
+                    </tbody>
+                </table>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <a href="{% url 'compressor_insert' %}" class="btn btn-secondary w-100">
+                        <i class="fas fa-stream"></i> Back to form
+                    </a>
+                </div>
+            </div>
+            
+        </div>
+
+
+
+{% endblock content %}
