@@ -13,7 +13,9 @@ User-Friendly Design: With its intuitive interface, users can easily input, orga
 Analytical Tools: Integrated features allow users to perform in-depth data analysis, uncovering trends and actionable insights to drive informed decisions.
 Cross-Platform Compatibility: Designed to work seamlessly on both mobile devices and web browsers, the system ensures flexibility and convenience for users in the field or the office.
 
-**Media:**[`System Images`](https://github.com/TvlanS/Web-Based-Utilities-Equipment-Data-Management-System/tree/main/Media)
+**Media:**
+![alt text](https://raw.githubusercontent.com/TvlanS/Web-Based-Utilities-Equipment-Data-Management-System/refs/heads/main/Media/1.png)
+[`System Images`](https://github.com/TvlanS/Web-Based-Utilities-Equipment-Data-Management-System/tree/main/Media)
 
 **Technology:** Python, Django, Numpy, Plotly, HTML, Bootstrap, postgreSQL.
 
