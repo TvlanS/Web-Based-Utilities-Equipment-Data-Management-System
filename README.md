@@ -21,6 +21,7 @@ Cross-Platform Compatibility: Designed to work seamlessly on both mobile devices
 ![alt text](https://raw.githubusercontent.com/TvlanS/Web-Based-Utilities-Equipment-Data-Management-System/refs/heads/main/Media/1.png)
 ![alt text](https://github.com/TvlanS/Web-Based-Utilities-Equipment-Data-Management-System/blob/main/Media/2.1.png)
 ![alt text](https://github.com/TvlanS/Web-Based-Utilities-Equipment-Data-Management-System/blob/main/Media/5.png)
+![alt text](https://raw.githubusercontent.com/TvlanS/Web-Based-Utilities-Equipment-Data-Management-System/refs/heads/main/Media/SQL_Database.png)
 [`System Images`](https://github.com/TvlanS/Web-Based-Utilities-Equipment-Data-Management-System/tree/main/Media)
 
 
