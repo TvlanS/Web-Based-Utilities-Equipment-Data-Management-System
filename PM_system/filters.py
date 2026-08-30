@@ -3,13 +3,16 @@ from datetime import timedelta
 import django_filters
 from django import forms
 
+from .constants import UNIT_NAMES
 from .models import Compressor
 
 
+# Filter choices exclude '0' ("All units"): the filter's empty label
+# already covers that case.
 CHILLER_UNITS = [
-    ('1', 'Trane-1'),
-    ('2', 'Trane-2'),
-    ('3', 'Trane-3'),
+    (key, label)
+    for key, label in UNIT_NAMES.items()
+    if key != '0'
 ]
 
 
