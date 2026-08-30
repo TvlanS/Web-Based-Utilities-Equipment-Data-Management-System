@@ -1,5 +1,7 @@
 # Utilities PM V2
 
+<img src="https://github.com/TvlanS/Web-Based-Utilities-Equipment-Data-Management-System/blob/8e339f0f303b907eabd4788dbea6db43aeb55f02/Media/Forms.png?raw=true" width="400"> | <img src="https://github.com/TvlanS/Web-Based-Utilities-Equipment-Data-Management-System/blob/8e339f0f303b907eabd4788dbea6db43aeb55f02/Media/Plot_2.png?raw=true" width="400">
+
 ## Industrial Equipment Monitoring, Made Clear
 
 Utilities PM V2 is an improved and focused preventive-maintenance platform for monitoring compressor equipment, identifying abnormal conditions, and turning raw operating data into actionable insights.
