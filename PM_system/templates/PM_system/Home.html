@@ -1,0 +1,37 @@
+{% extends "PM_system/base.html" %}
+
+{% block title %}Utilities Equipment PM{% endblock %}
+
+{% block content %}
+<style>
+    .home-page { background: #f7f8fb; min-height: calc(100vh - 56px); color: #1f2937; font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+    .home-card { border: 1px solid #e7e9ef; border-radius: 10px; background: #fff; box-shadow: 0 3px 14px rgba(30, 41, 59, .06); }
+    .home-kicker { color: #56308f; font-size: .9rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
+    .home-title { color: #1f2937; font-size: clamp(2rem, 5vw, 3.6rem); font-weight: 800; letter-spacing: -.035em; }
+    .home-copy { color: #64748b; font-size: 1.08rem; max-width: 650px; }
+    .home-link { border-radius: 5px; font-weight: 650; padding: .65rem 1.2rem; }
+    .home-link.primary { background: #56308f; border: 1px solid #56308f; color: #fff; }
+    .home-link.primary:hover { background: #3d216d; color: #fff; }
+    .home-link.secondary { border: 1px solid #d7dce5; color: #56308f; }
+    .home-link.secondary:hover { background: #f5effd; }
+    .home-feature { border-left: 3px solid #56308f; padding-left: 12px; }
+    .home-feature h2 { font-size: 1rem; font-weight: 750; margin-bottom: 3px; }
+    .home-feature p { color: #64748b; font-size: .88rem; margin: 0; }
+</style>
+
+<main class="home-page py-5">
+    <div class="container">
+        <section class="home-card p-4 p-md-5 mb-4">
+            <div class="home-kicker mb-3">Utilities PM</div>
+            <h1 class="home-title mb-3">Equipment performance, clearly monitored.</h1>
+            <p class="home-copy mb-4">Record compressor readings, filter operating data, and review performance trends with control-limit analysis.</p>
+            <div class="d-flex flex-wrap gap-2"><a href="{% url 'compressor_insert' %}" class="home-link primary"><i class="fa-solid fa-plus me-1"></i> Enter compressor data</a><a href="{% url 'PM_plot' %}" class="home-link secondary"><i class="fa-solid fa-chart-line me-1"></i> View performance plot</a></div>
+        </section>
+        <section class="row g-3">
+            <div class="col-md-4"><div class="home-card home-feature h-100 p-3"><h2>Capture readings</h2><p>Enter operating measurements for each compressor unit.</p></div></div>
+            <div class="col-md-4"><div class="home-card home-feature h-100 p-3"><h2>Filter the data</h2><p>Review records by unit and date range, then export them when needed.</p></div></div>
+            <div class="col-md-4"><div class="home-card home-feature h-100 p-3"><h2>Understand trends</h2><p>Compare individual readings, daily averages, and control limits.</p></div></div>
+        </section>
+    </div>
+</main>
+{% endblock %}

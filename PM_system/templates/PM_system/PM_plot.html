@@ -1,0 +1,117 @@
+{% extends "PM_system/base.html" %}
+
+{% block title %}Performance Plot{% endblock %}
+
+{% block content %}
+<style>
+    :root { --pm-purple: #56308f; --pm-ink: #1f2937; }
+    .plot-page { background: #f7f8fb; min-height: calc(100vh - 56px); color: var(--pm-ink); font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+    .plot-shell { max-width: 1480px; }
+    .pm-panel { background: #fff; border: 1px solid #e7e9ef; border-radius: 10px; box-shadow: 0 3px 14px rgba(30, 41, 59, .06); }
+    .pm-panel-title { color: var(--pm-purple); font-size: .95rem; font-weight: 800; letter-spacing: .02em; text-transform: uppercase; }
+    .pm-label { color: #273244; font-size: .88rem; font-weight: 500; }
+    .pm-input, .pm-select { border: 1px solid #d7dce5; border-radius: 5px; min-height: 38px; width: 100%; padding: .45rem .7rem; color: #253044; background: #fff; }
+    .pm-input:focus, .pm-select:focus { border-color: #7651ac; box-shadow: 0 0 0 3px rgba(86, 48, 143, .12); outline: 0; }
+    .pm-btn { border-radius: 5px; font-weight: 600; min-height: 38px; padding: .45rem 1.1rem; }
+    .pm-btn-primary { background: var(--pm-purple); border: 1px solid var(--pm-purple); color: #fff; }
+    .pm-btn-primary:hover { background: #3d216d; color: #fff; }
+    .pm-btn-clear { background: #fff; border: 1px solid #d92d36; color: #c8242d; }
+    .pm-stat { border: 1px solid #e2e6ed; border-radius: 6px; min-height: 102px; padding: 13px 14px 10px; text-align: center; }
+    .pm-stat.daily { background: #f5effd; border-color: #d2b8f0; }
+    .statistics-date-range { color: #536071; font-size: .88rem; font-weight: 500; }
+    .pm-stat-label { color: #273244; font-size: .88rem; font-weight: 500; }
+    .pm-stat-value { color: #182235; font-size: 1.25rem; font-weight: 700; margin-top: 8px; }
+    .pm-stat-unit { color: #4c5667; font-size: .88rem; margin-top: 2px; }
+    .pm-alert { background: #fff7f7; border: 1px solid #f5c8cb; border-radius: 6px; color: #273244; }
+    .pm-alert strong { color: #c8242d; }
+    .pm-error-row { border-radius: 4px; margin: 4px 0; padding: 4px 8px; }
+    .pm-error-row.below { background: #fff7ed; color: #92400e; }
+    .pm-error-row.below strong { color: #b45309; }
+    .pm-error-row.above { background: #fff1f2; color: #991b1b; }
+    .pm-error-row.above strong { color: #b91c1c; }
+    .pm-latest-status { border-radius: 4px; color: #fff; font-size: .78rem; font-weight: 800; letter-spacing: .04em; padding: 7px 10px; text-align: center; text-transform: uppercase; }
+    .pm-latest-status.ok { background: #198754; }
+    .pm-latest-status.bad { background: #dc3545; }
+    .plotly-graph-div { width: 100% !important; }
+</style>
+
+<div class="plot-page py-4">
+    <main class="container-fluid plot-shell">
+        {% if alert_items %}
+        <div class="pm-alert p-3 mb-3 d-flex align-items-start gap-3">
+            <i class="fa-solid fa-triangle-exclamation text-danger fs-3 mt-1"></i>
+            <div class="flex-grow-1"><strong>ALERT: The most recent value is outside control limits!</strong>
+                <div class="mt-1">Unit: <strong>{{ alert_unit }}</strong> · Reading time: {{ alert_timestamp|date:"Y-m-d H:i" }}</div>
+                <div class="mt-2">Exited parameters:</div>
+                <ul class="mb-0 ps-3">
+                    {% for item in alert_items %}<li class="pm-error-row {% if item.status == 'Below LCL' %}below{% else %}above{% endif %}"><strong>{{ item.label }}</strong>: {{ item.value }} — <strong>{{ item.status }}</strong> (UCL {{ item.ucl }}, LCL {{ item.lcl }})</li>{% endfor %}
+                </ul>
+            </div>
+        </div>
+        {% endif %}
+
+        <section class="row g-3 mb-3">
+            <div class="col-lg-9"><div class="pm-panel p-3 h-100">
+                <div class="pm-panel-title mb-3">Filter data</div>
+                <form action="{% url 'PM_plot' %}" method="get" autocomplete="off">
+                    <div class="row g-3 align-items-center">
+                        <div class="col-md-2"><label class="pm-label" for="id_var">Variable<span class="text-danger">*</span></label></div><div class="col-md-4">{{ form2.var }}</div>
+                        <div class="col-md-2"><label class="pm-label" for="id_unit">Unit<span class="text-danger">*</span></label></div><div class="col-md-4">{{ form2.unit }}</div>
+                        <div class="col-md-2"><label class="pm-label" for="id_start">Start date</label></div><div class="col-md-4">{{ form2.start }}</div>
+                        <div class="col-md-2"><label class="pm-label" for="id_end">End date</label></div><div class="col-md-4">{{ form2.end }}</div>
+                        <div class="col-md-2"></div><div class="col-md-4"><label class="pm-label"><input type="checkbox" id="today-toggle" class="form-check-input me-2"> Today</label></div>
+                    </div>
+                    {% if limits_overridden %}<input type="hidden" name="ucl" value="{{ ucl }}"><input type="hidden" name="lcl" value="{{ lcl }}">{% endif %}
+                    <div class="d-flex justify-content-end gap-2 mt-3"><a href="{% if limits_overridden %}{% url 'PM_plot' %}?ucl={{ ucl }}&lcl={{ lcl }}{% else %}{% url 'PM_plot' %}{% endif %}" class="pm-btn pm-btn-clear"><i class="fa-solid fa-rotate me-1"></i> Clear</a><button type="submit" class="pm-btn pm-btn-primary"><i class="fa-solid fa-filter me-1"></i> Apply filter</button></div>
+                </form>
+            </div></div>
+            <div class="col-lg-3"><div class="pm-panel p-3 h-100">
+                <div class="pm-panel-title mb-3">Control limits <i class="fa-regular fa-circle-question text-muted ms-1" title="Applied to individual readings"></i></div>
+                <form action="{% url 'PM_plot' %}" method="get" autocomplete="off">
+                    <div class="row g-3 align-items-center"><div class="col-3"><label class="pm-label" for="id_ucl">UCL</label></div><div class="col-9">{{ control_form.ucl }}</div><div class="col-3"><label class="pm-label" for="id_lcl">LCL</label></div><div class="col-9">{{ control_form.lcl }}</div></div>
+                    <input type="hidden" name="var" value="{{ var }}"><input type="hidden" name="unit" value="{{ unit }}">{% if start %}<input type="hidden" name="start" value="{{ start|date:'Y-m-d' }}">{% endif %}{% if end %}<input type="hidden" name="end" value="{{ end|date:'Y-m-d' }}">{% endif %}
+                    <div class="d-flex justify-content-end gap-2 mt-3"><a href="{% url 'PM_plot' %}{% if var or unit or start or end %}?var={{ var }}&unit={{ unit }}{% if start %}&start={{ start|date:'Y-m-d' }}{% endif %}{% if end %}&end={{ end|date:'Y-m-d' }}{% endif %}{% endif %}" class="pm-btn pm-btn-clear"><i class="fa-solid fa-rotate me-1"></i> Clear</a><button type="submit" class="pm-btn pm-btn-primary"><i class="fa-solid fa-check me-1"></i> Apply</button></div>
+                </form>
+                {% if control_form.ucl.errors or control_form.lcl.errors %}<small class="text-danger d-block mt-2">Enter valid numeric limits.</small>{% endif %}{% if invalid_limits %}<small class="text-danger d-block mt-2">Invalid limit range. Existing defaults were used.</small>{% endif %}
+                <small class="d-block mt-3">Default: UCL = {{ default_ucl }}, LCL = {{ default_lcl }}</small>
+            </div></div>
+        </section>
+
+        <section class="pm-panel p-3 mb-3"><div class="pm-panel-title mb-3">Summary statistics <i class="fa-regular fa-circle-question text-muted ms-1" title="Calculated from filtered individual readings"></i></div> <div class="statistics-date-range">Statistics period: {{ statistics_date_range }}</div><div class="row row-cols-2 row-cols-md-4 row-cols-xl-7 g-2">
+            {% for label,value in metric_items %}<div class="col"><div class="pm-stat {% if label == 'Daily average' %}daily{% endif %}"><div class="pm-stat-label">{{ label }}</div><div class="pm-stat-value">{{ value|default_if_none:'—' }}</div>{% if label == 'Mean' or label == 'Maximum' or label == 'Minimum' or label == 'Daily average' %}<div class="pm-stat-unit">{{ measurement_unit }}</div>{% endif %}</div></div>{% endfor %}
+        </div></section>
+
+        <section class="pm-panel p-3"><div class="pm-panel-title mb-3">{{ variable_label }}</div><div class="row g-3"><div class="col-xl-10">{% if chart %}{{ chart|safe }}{% else %}<p class="text-center text-muted py-5 mb-0">No data matches the selected filters.</p>{% endif %}</div><div class="col-xl-2">
+            <div class="border rounded p-3 mb-3"><div class="pm-panel-title mb-2">Legend</div><div class="small mb-2"><span class="text-danger">●</span> Above UCL</div><div class="small mb-2"><span class="text-warning">▼</span> Below LCL</div><div class="small"><span class="text-primary">●</span> Within limits</div></div>
+            {% if latest_status %}<div class="border rounded p-3"><div class="pm-panel-title mb-2">Latest reading</div><div class="pm-latest-status {% if warning %}bad{% else %}ok{% endif %} mb-3">{{ latest_status }}</div><div class="small lh-lg">Date: {{ latest.timestamp|date:"Y-m-d H:i" }}<br>Value: {{ latest.value }}<br>Unit: {{ latest.unit }}<br>Status: <strong>{{ latest_status }}</strong></div></div>{% endif %}
+        </div></div><small class="text-muted">Individual readings are connected chronologically. Daily averages are shown as a separate series; control limits apply to individual readings.</small></section>
+    </main>
+</div>
+<script>
+    (() => {
+        const navigation = performance.getEntriesByType('navigation')[0];
+        const params = new URLSearchParams(window.location.search);
+        if (navigation && navigation.type === 'reload' && (params.has('ucl') || params.has('lcl'))) {
+            params.delete('ucl');
+            params.delete('lcl');
+            window.location.replace(window.location.pathname + (params.toString() ? '?' + params.toString() : ''));
+            return;
+        }
+        const toggle = document.getElementById('today-toggle');
+        const start = document.getElementById('id_start');
+        const end = document.getElementById('id_end');
+        if (!toggle || !start || !end) return;
+        toggle.addEventListener('change', () => {
+            if (toggle.checked) {
+                const now = new Date();
+                const today = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+                start.value = today;
+                end.value = today;
+            } else {
+                start.value = '';
+                end.value = '';
+            }
+        });
+    })();
+</script>
+{% endblock %}

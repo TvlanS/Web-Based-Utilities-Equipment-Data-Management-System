@@ -1,0 +1,40 @@
+{% extends "PM_system/base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}Enter Compressor Data{% endblock %}
+
+{% block content %}
+<style>
+    :root { --pm-purple: #56308F; --pm-purple-dark: #3D216D; --pm-ink: #1F2937; --pm-muted: #64748B; --pm-border: #D7DCE5; --pm-red: #C8242D; }
+    .form-page { min-height: calc(100vh - 56px); background: #F7F8FB; color: var(--pm-ink); font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+    .form-card { background: #fff; border: 1px solid #E7E9EF; border-radius: 10px; box-shadow: 0 3px 14px rgba(30, 41, 59, .06); }
+    .form-title { color: var(--pm-purple); font-size: 1.05rem; font-weight: 800; letter-spacing: .02em; text-transform: uppercase; }
+    .form-subtitle { color: var(--pm-muted); font-size: .88rem; }
+    .form-card hr { border-color: #E7E9EF; margin: 1.5rem 0 1rem; opacity: 1; }
+    .form-card .display-6 { color: var(--pm-purple); font-size: .95rem; font-weight: 800; letter-spacing: .02em; text-transform: uppercase; }
+    .form-card label, .form-card .form-check-label { color: var(--pm-ink); font-weight: 500; }
+    .form-card .form-control, .form-card .form-select { border-color: var(--pm-border); border-radius: 5px; color: var(--pm-ink); min-height: 38px; }
+    .form-card .form-control:focus, .form-card .form-select:focus { border-color: #7651AC; box-shadow: 0 0 0 3px rgba(86, 48, 143, .12); }
+    .form-card .input-group-text { background: #F5EFFD; border-color: var(--pm-border); color: var(--pm-purple); font-weight: 600; }
+    .form-card .form-check-input { border-color: var(--pm-border); }
+    .form-card .form-check-input:checked { background-color: var(--pm-purple); border-color: var(--pm-purple); }
+    .form-card .btn { border-radius: 5px; font-weight: 700; min-height: 40px; }
+    .form-card .btn-success { background: var(--pm-purple); border-color: var(--pm-purple); }
+    .form-card .btn-success:hover { background: var(--pm-purple-dark); border-color: var(--pm-purple-dark); }
+    .form-card .btn-secondary { background: #fff; border-color: var(--pm-red); color: var(--pm-red); }
+    .form-card .btn-secondary:hover { background: #FFF7F7; border-color: var(--pm-red); color: var(--pm-red); }
+    .form-card .invalid-feedback, .form-card .text-danger { color: var(--pm-red) !important; }
+</style>
+
+<main class="form-page py-4">
+    <div class="container">
+        <div class="form-card p-4 p-md-5">
+            <div class="mb-4"><div class="form-title">Enter compressor data</div><div class="form-subtitle mt-1">Record operating measurements for a compressor unit.</div></div>
+            <form action="" method="post" autocomplete="off">
+                {% csrf_token %}
+                {% crispy form %}
+            </form>
+        </div>
+</div>
+</main>
+{% endblock %}

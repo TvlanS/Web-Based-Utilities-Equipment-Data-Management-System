@@ -1,0 +1,546 @@
+{% extends "PM_system/base.html" %}
+{% block title %}Chiller Operating Data{% endblock %}
+
+{% block content %}
+<style>
+    :root { --pm-purple: #56308f; --pm-purple-dark: #3d216d; --pm-ink: #1f2937; --pm-muted: #64748b; }
+    .monitoring-page {
+        min-height: calc(100vh - 56px);
+        background: #f7f8fb;
+        color: var(--pm-ink);
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+
+    .monitoring-toolbar,
+    .monitoring-table-card {
+        border: 1px solid #e7e9ef;
+        border-radius: 10px;
+        background: #fff;
+        box-shadow: 0 3px 14px rgba(30, 41, 59, .06);
+    }
+
+    .monitoring-toolbar {
+        padding: 1rem 1.25rem;
+    }
+
+    .monitoring-title {
+        margin: 0;
+        color: var(--pm-purple);
+        font-size: 1.05rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: .01em;
+    }
+
+    .monitoring-subtitle {
+        margin: .2rem 0 0;
+        color: var(--pm-muted);
+        font-size: .86rem;
+    }
+
+    .date-range-fields {
+        display: grid;
+        gap: .35rem;
+    }
+
+    .date-range-field label {
+        display: block;
+        margin-bottom: .2rem;
+        color: #273244;
+        font-size: .78rem;
+        font-weight: 500;
+    }
+
+    .filter-field > label {
+        display: block;
+        margin-bottom: .2rem;
+        color: #273244;
+        font-size: .78rem;
+        font-weight: 500;
+    }
+
+    .filter-control {
+        min-height: 38px;
+        border-color: #d7dce5;
+        border-radius: 5px;
+        color: #253044;
+        font-size: .95rem;
+        background: #fff;
+    }
+
+    .filter-control:focus {
+        border-color: #7651ac;
+        box-shadow: 0 0 0 3px rgba(86, 48, 143, .12);
+        outline: 0;
+    }
+
+    .monitoring-toolbar .form-check {
+        min-height: 38px;
+        display: flex;
+        align-items: center;
+        gap: .35rem;
+        margin: 0;
+    }
+
+    .monitoring-toolbar .form-check-input {
+        margin: 0;
+    }
+
+    .monitoring-toolbar .btn {
+        min-height: 38px;
+        border-radius: 5px;
+        font-weight: 600;
+    }
+
+    .monitoring-toolbar .btn-primary { background: var(--pm-purple); border-color: var(--pm-purple); }
+    .monitoring-toolbar .btn-primary:hover { background: var(--pm-purple-dark); border-color: var(--pm-purple-dark); }
+    .monitoring-toolbar .btn-outline-secondary { border-color: #d92d36; color: #c8242d; }
+    .monitoring-toolbar .btn-outline-secondary:hover { background: #fff1f2; border-color: #c8242d; color: #c8242d; }
+    .monitoring-toolbar .btn-success { background: #198754; border-color: #198754; }
+
+    .table-scroll {
+        overflow-x: auto;
+        overflow-y: auto;
+        max-height: 600px;
+    }
+
+    .monitoring-table {
+        min-width: 1840px;
+        margin: 0;
+        border-collapse: separate;
+        border-spacing: 0;
+        color: var(--pm-ink);
+        font-size: .86rem;
+    }
+
+    .monitoring-table th,
+    .monitoring-table td {
+        padding: .7rem .8rem;
+        border-bottom: 1px solid #e7ebf0;
+        white-space: nowrap;
+        vertical-align: middle;
+    }
+
+    .monitoring-table thead th {
+        border-right: 1px solid #dfe5ec;
+    }
+
+    .monitoring-table .group-header th {
+        position: sticky;
+        top: 0;
+        z-index: 5;
+        padding: .55rem .7rem;
+        border-bottom: 1px solid #c7d0db;
+        background: var(--pm-purple);
+        color: #fff;
+        font-size: .72rem;
+        font-weight: 700;
+        letter-spacing: .08em;
+        text-align: center;
+    }
+
+    .monitoring-table .column-header th {
+        position: sticky;
+        top: 35px;
+        z-index: 4;
+        padding: .65rem .8rem;
+        background: #f5effd;
+        color: #3d216d;
+        font-size: .76rem;
+        font-weight: 650;
+        line-height: 1.2;
+        text-align: left;
+    }
+
+    .monitoring-table .column-header th.sortable {
+        cursor: pointer;
+        user-select: none;
+        transition: background-color .15s ease, color .15s ease;
+    }
+
+    .monitoring-table .column-header th.sortable:hover,
+    .monitoring-table .column-header th.sort-active {
+        background: #e9ddf8;
+        color: #3d216d;
+    }
+
+    .monitoring-table .column-header th a {
+        display: block;
+        color: inherit;
+        text-decoration: none;
+    }
+
+    .monitoring-table tbody tr:hover td {
+        background: #faf9fc;
+    }
+
+    .monitoring-table tbody tr:last-child td {
+        border-bottom: 0;
+    }
+
+    .monitoring-table .numeric {
+        min-width: 96px;
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .monitoring-table .unit-cell {
+        min-width: 125px;
+        font-weight: 650;
+    }
+
+    .monitoring-table .datetime-cell {
+        min-width: 155px;
+        color: #526174;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .monitoring-table .status-cell {
+        min-width: 104px;
+        text-align: center;
+    }
+
+    .monitoring-table .flow-cell {
+        min-width: 120px;
+        text-align: center;
+    }
+
+    .monitoring-table .actions-cell {
+        min-width: 42px;
+        padding-right: .45rem;
+        padding-left: .45rem;
+        text-align: center;
+    }
+
+    .monitoring-table .sticky-action,
+    .monitoring-table .sticky-unit,
+    .monitoring-table .sticky-date {
+        position: sticky;
+        z-index: 3;
+        background: #fff;
+    }
+
+    .monitoring-table .sticky-action {
+        left: 0;
+    }
+
+    .monitoring-table .sticky-unit {
+        left: 0;
+        box-shadow: 3px 0 0 rgba(52, 70, 92, .08);
+    }
+
+    .monitoring-table .sticky-date {
+        left: 125px;
+        box-shadow: 3px 0 0 rgba(52, 70, 92, .08);
+    }
+
+    .monitoring-table thead .sticky-action,
+    .monitoring-table thead .sticky-unit,
+    .monitoring-table thead .sticky-date {
+        z-index: 6;
+    }
+
+    .monitoring-table .group-header .sticky-action,
+    .monitoring-table .group-header .sticky-unit,
+    .monitoring-table .group-header .sticky-date {
+        background: var(--pm-purple);
+    }
+
+    .monitoring-table .column-header .sticky-action,
+    .monitoring-table .column-header .sticky-unit,
+    .monitoring-table .column-header .sticky-date {
+        background: #f5effd;
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: .35rem;
+        border: 1px solid transparent;
+        border-radius: 999px;
+        padding: .28rem .55rem;
+        font-size: .7rem;
+        font-weight: 700;
+        letter-spacing: .04em;
+    }
+
+    .status-badge::before {
+        content: '●';
+        font-size: .62rem;
+    }
+
+    .status-ok {
+        border-color: #b9ddca;
+        background: #edf8f1;
+        color: #21643b;
+    }
+
+    .status-muted {
+        border-color: #d5dce5;
+        background: #f3f5f7;
+        color: #596779;
+    }
+
+    .status-warning {
+        border-color: #ecd6a3;
+        background: #fff8e7;
+        color: #80600f;
+    }
+
+    .mode-cooling {
+        border-color: #b9d5f2;
+        background: #eef6ff;
+        color: #145a91;
+    }
+
+    .mode-standby {
+        border-color: #d9c4f0;
+        background: #f7f0ff;
+        color: #663a91;
+    }
+
+    .action-button {
+        border: 0;
+        background: transparent;
+        color: #647286;
+    }
+
+    .action-button:hover,
+    .action-button:focus-visible {
+        color: #7452a0;
+    }
+
+    @media (max-width: 768px) {
+        .monitoring-table {
+            font-size: .8rem;
+        }
+
+        .monitoring-table th,
+        .monitoring-table td {
+            padding: .6rem .7rem;
+        }
+    }
+</style>
+
+<main class="container-fluid monitoring-page py-4">
+    <div class="monitoring-toolbar mb-3">
+        <h1 class="monitoring-title">Chiller Operating Data</h1>
+        <p class="monitoring-subtitle">Evaporator, chilled-water, and refrigerant operating parameters</p>
+
+        <form method="get" autocomplete="off" class="mt-3">
+            <div class="row align-items-end g-3">
+                <div class="col-12 col-md-6 col-lg-2 filter-field">
+                    <label for="{{myFilter.form.unit.id_for_label}}">Unit</label>{{ myFilter.form.unit }}
+                </div>
+                <div class="col-12 col-md-6 col-lg-2 filter-field">
+                    <label for="{{ myFilter.form.start_date.id_for_label }}">Start Date</label>{{ myFilter.form.start_date }}
+                </div>
+                <div class="col-12 col-md-6 col-lg-2 filter-field">
+                    <label for="{{ myFilter.form.end_date.id_for_label }}">End Date</label>{{ myFilter.form.end_date }}
+                </div>
+                <div class="col-12 col-md-6 col-lg-1 pb-2">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault">
+                        <label class="form-check-label" for="flexCheckDefault">Today</label>
+                    </div>
+                </div>
+                <div class="col-12 col-md-4 col-lg-2">
+                    <button type="submit" class="btn btn-primary w-100"><i class="fa fa-filter" aria-hidden="true"></i> Filter</button>
+                </div>
+                <div class="col-12 col-md-4 col-lg-1">
+                    <a href="{% url 'PM_filter' %}" class="btn btn-outline-secondary w-100">Clear</a>
+                </div>
+                <div class="col-12 col-md-4 col-lg-2">
+                    <button type="submit" name="export" value="1" class="btn btn-success w-100" title="Export filtered records"><i class="fa fa-file-excel-o" aria-hidden="true"></i> Export</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <section class="monitoring-table-card" aria-labelledby="table-heading">
+        <h2 id="table-heading" class="visually-hidden">Chiller monitoring readings</h2>
+        <div class="table-scroll">
+            <table class="monitoring-table">
+                <caption class="visually-hidden">Chiller operating readings grouped by identification, chilled water, operating status, evaporator, expansion valve, and refrigerant.</caption>
+                <thead>
+                    <tr class="group-header">
+                        <th id="group-identification" colspan="2" scope="colgroup" class="sticky-unit">IDENTIFICATION</th>
+                        <th id="group-chilled-water" colspan="2" scope="colgroup">CHILLED WATER</th>
+                        <th id="group-status" colspan="2" scope="colgroup">OPERATING STATUS</th>
+                        <th id="group-evaporator" colspan="6" scope="colgroup">EVAPORATOR</th>
+                        <th id="group-expansion" colspan="2" scope="colgroup">EXPANSION VALVE</th>
+                        <th id="group-refrigerant" scope="colgroup">REFRIGERANT</th>
+                        <th id="group-actions" colspan="2" scope="colgroup">ACTIONS</th>
+                    </tr>
+                    <tr class="column-header">
+                        <th id="col-unit" headers="group-identification" scope="col" class="unit-cell sticky-unit">Unit</th>
+                        <th id="col-date" headers="group-identification" scope="col" class="datetime-cell sticky-date">Date / Time</th>
+                        <th id="col-setpoint" headers="group-chilled-water" scope="col" class="numeric">Setpoint (°F)</th>
+                        <th id="col-current-limit" headers="group-chilled-water" scope="col" class="numeric">Current Limit (°F)</th>
+                        <th id="col-mode" headers="group-status" scope="col" class="status-cell">
+                            <a href="{{ mode_sort_url }}" aria-label="Sort by Mode">Mode</a>
+                        </th>
+                        <th id="col-flow" headers="group-status" scope="col" class="flow-cell">
+                            <a href="{{ flow_sort_url }}" aria-label="Sort by Flow Status">Flow Status</a>
+                        </th>
+                        <th id="col-entering" headers="group-evaporator" scope="col" class="numeric">Entering Temp (°C)</th>
+                        <th id="col-leaving" headers="group-evaporator" scope="col" class="numeric">Leaving Temp (°C)</th>
+                        <th id="col-saturated" headers="group-evaporator" scope="col" class="numeric">Saturated Temp (°C)</th>
+                        <th id="col-pressure" headers="group-evaporator" scope="col" class="numeric">Pressure (psi)</th>
+                        <th id="col-approach" headers="group-evaporator" scope="col" class="numeric">Refrigerant Approach (°C)</th>
+                        <th id="col-water-pressure-drop" headers="group-evaporator" scope="col" class="numeric">Water Pressure Drop (ft)</th>
+                        <th id="col-position" headers="group-expansion" scope="col" class="numeric">Position (%)</th>
+                        <th id="col-steps" headers="group-expansion" scope="col" class="numeric">Steps</th>
+                        <th id="col-liquid-level" headers="group-refrigerant" scope="col" class="numeric">Liquid Level (mm)</th>
+                        <th id="col-edit" headers="group-actions" scope="col" class="actions-cell">Edit</th>
+                        <th id="col-delete" headers="group-actions" scope="col" class="actions-cell">Delete</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for compressor in compressor_list %}
+                    <tr>
+                        <td class="unit-cell sticky-unit">{{ compressor.unit }}</td>
+                        <td class="datetime-cell sticky-date">{{ compressor.date|date:"Y-m-d H:i" }}</td>
+                        <td class="numeric">{{ compressor.Chill_Water_Setpoint }}</td>
+                        <td class="numeric">{{ compressor.Curr_Lim_Setpoint }}</td>
+                        <td class="status-cell" data-sort-value="{{ compressor.Mode|default:'' }}">
+                            {% if compressor.Mode == 'Cooling' %}
+                                <span class="status-badge mode-cooling">COOLING</span>
+                            {% elif compressor.Mode == 'Standby' %}
+                                <span class="status-badge mode-standby">STANDBY</span>
+                            {% elif compressor.Mode == 'Run' %}
+                                <span class="status-badge status-ok">RUN</span>
+                            {% elif compressor.Mode == 'Offline' %}
+                                <span class="status-badge status-muted">OFFLINE</span>
+                            {% else %}
+                                <span class="status-badge status-warning">{{ compressor.Mode|default:'UNKNOWN'|upper }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="flow-cell" data-sort-value="{{ compressor.Evap_Flowswitch_Status|default:'' }}">
+                            {% if compressor.Evap_Flowswitch_Status == 'Flow' %}
+                                <span class="status-badge status-ok">FLOWING</span>
+                            {% elif compressor.Evap_Flowswitch_Status == 'No flow' %}
+                                <span class="status-badge status-muted">NO FLOW</span>
+                            {% else %}
+                                <span class="status-badge status-warning">{{ compressor.Evap_Flowswitch_Status|default:'UNKNOWN'|upper }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="numeric">{{ compressor.Evap_Entering_Water_Temp }}</td>
+                        <td class="numeric">{{ compressor.Evap_Leaving_Water_Temp }}</td>
+                        <td class="numeric">{{ compressor.Evap_Saturated_Rfgt_Temp }}</td>
+                        <td class="numeric">{{ compressor.Evap_Saturated_Rfgt_Pres }}</td>
+                        <td class="numeric">{{ compressor.Evap_Rfgt_Approach_Temp }}</td>
+                        <td class="numeric">{{ compressor.Evap_Water_PD_FT }}</td>
+                        <td class="numeric">{{ compressor.Expansion_Valve_Position }}</td>
+                        <td class="numeric">{{ compressor.Expansion_Valve_Steps }}</td>
+                        <td class="numeric">{{ compressor.Evap_Rfgt_Liquid_Level }}</td>
+                        <td class="actions-cell">
+                            <a href="{% url 'PM_filter_edit' compressor.id %}" class="btn btn-sm action-button" aria-label="Edit record for {{ compressor.unit }}">
+                                <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+                            </a>
+                        </td>
+                        <td class="actions-cell">
+                            <form method="post" action="{% url 'PM_delete' compressor.id %}" onsubmit="return confirm('Delete this record?');">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm action-button" aria-label="Delete record for {{ compressor.unit }}">
+                                    <i class="fa fa-trash-o" aria-hidden="true"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="18" class="text-center py-5 text-muted">No records found for the selected filters.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+</main>
+
+<script>
+    (() => {
+        const table = document.querySelector('.monitoring-table');
+        const body = table && table.tBodies[0];
+        const headers = table ? table.querySelectorAll('thead .column-header th') : [];
+        if (!table || !body || !headers.length) return;
+
+        const defaultRows = Array.from(body.rows).filter(row => row.cells.length > 1);
+        let activeHeader = null;
+        let direction = 0;
+
+        headers.forEach((header, index) => {
+            // The first 15 columns contain sortable record data; the final two are actions.
+            if (index >= 15) return;
+            header.classList.add('sortable');
+            header.setAttribute('role', 'button');
+            header.setAttribute('tabindex', '0');
+            header.setAttribute('aria-label', `Sort by ${header.textContent.trim()}`);
+
+            const sort = () => {
+                const next = activeHeader === header
+                    ? (direction === 1 ? -1 : direction === -1 ? 0 : 1)
+                    : 1;
+                headers.forEach(item => {
+                    item.classList.remove('sort-active');
+                    item.removeAttribute('aria-sort');
+                });
+
+                if (next === 0) {
+                    defaultRows.forEach(row => body.appendChild(row));
+                    activeHeader = null;
+                    direction = 0;
+                    return;
+                }
+
+                activeHeader = header;
+                direction = next;
+                header.classList.add('sort-active');
+                header.setAttribute('aria-sort', next === 1 ? 'ascending' : 'descending');
+                const rows = [...defaultRows].sort((left, right) => {
+                    const a = left.cells[index]?.dataset.sortValue || left.cells[index]?.textContent.trim() || '';
+                    const b = right.cells[index]?.dataset.sortValue || right.cells[index]?.textContent.trim() || '';
+                    if (!a && !b) return 0;
+                    if (!a) return 1;
+                    if (!b) return -1;
+                    let comparison;
+                    if (index === 1) {
+                        comparison = new Date(a.replace(' ', 'T')).getTime() - new Date(b.replace(' ', 'T')).getTime();
+                    } else if (index >= 2 && index <= 14) {
+                        comparison = (parseFloat(a.replace(/[^0-9.-]/g, '')) || 0) - (parseFloat(b.replace(/[^0-9.-]/g, '')) || 0);
+                    } else {
+                        comparison = a.trim().localeCompare(b.trim(), undefined, {numeric: true, sensitivity: 'base'});
+                    }
+                    return comparison * next;
+                });
+                rows.forEach(row => body.appendChild(row));
+            };
+
+            header.addEventListener('click', event => {
+                // The header link is also a server-side fallback. Prevent its
+                // navigation when JavaScript sorting is available.
+                event.preventDefault();
+                sort();
+            });
+            header.addEventListener('keydown', event => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    sort();
+                }
+            });
+        });
+    })();
+
+    const todayCheckbox = document.getElementById('flexCheckDefault');
+    const startDate = document.querySelector('input[name="start_date"]');
+    const endDate = document.querySelector('input[name="end_date"]');
+
+    if (todayCheckbox && startDate && endDate) {
+        todayCheckbox.addEventListener('change', function () {
+            const now = new Date();
+            const today = [now.getFullYear(), String(now.getMonth() + 1).padStart(2, '0'), String(now.getDate()).padStart(2, '0')].join('-');
+            startDate.value = this.checked ? today : '';
+            endDate.value = this.checked ? today : '';
+        });
+    }
+</script>
+{% endblock %}
