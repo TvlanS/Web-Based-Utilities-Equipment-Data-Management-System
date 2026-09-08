@@ -64,7 +64,7 @@ The system provides the following capabilities:
 
 The Home page serves as the operational starting point for the platform.
 
-![Home Page](docs/images/home.png)
+![Home Page](https://github.com/TvlanS/Web-Based-Utilities-Equipment-Data-Management-System/blob/be0b8570c6e252b1470725302a88f778e5b87ae2/Media/Screenshot%202026-08-30%20131104.png)
 
 It provides quick access to:
 
@@ -78,7 +78,7 @@ It provides quick access to:
 
 The Compressor Data Entry page provides a structured form for recording compressor readings.
 
-![Compressor Form](docs/images/compressor-form.png)
+![Compressor Form](https://github.com/TvlanS/Web-Based-Utilities-Equipment-Data-Management-System/blob/be0b8570c6e252b1470725302a88f778e5b87ae2/Media/Forms.png)
 
 The form captures:
 
@@ -122,7 +122,7 @@ Column sorting follows a simple three-step interaction:
 
 The Performance Analysis page provides an interactive Plotly-based interface for understanding equipment behavior and identifying abnormal operating conditions.
 
-![Performance Plot](docs/images/plot-page.png)
+![Performance Plot](https://github.com/TvlanS/Web-Based-Utilities-Equipment-Data-Management-System/blob/be0b8570c6e252b1470725302a88f778e5b87ae2/Media/Plot_2.png)
 
 It displays:
 
@@ -142,6 +142,8 @@ Every chart, statistic, alert, and anomaly marker is generated from the same fil
 # 2. Anomaly Detection
 
 Each compressor reading is classified into one of three conditions:
+
+![Performance Plot](https://github.com/TvlanS/Web-Based-Utilities-Equipment-Data-Management-System/blob/be0b8570c6e252b1470725302a88f778e5b87ae2/Media/Plot_1.png)
 
 ```text
 Above UCL
